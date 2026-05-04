@@ -161,11 +161,24 @@ def get_output_signature(name: str) -> tuple[str, str]:
     """
     OUTPUT_SIGNATURES = {
         # "CaicedoLab/MorphEm": ("dict", "numpy"),
+        "bioimageio": ("dict", "numpy"),
         "cellpose": ("dict", "numpy"),
+        "cellsam": ("dict", "numpy"),
+        "cellwhisperer": ("dict", "numpy"),
+        "channelsformer": ("dict", "numpy"),
+        "deepprofiler": ("dict", "numpy"),
         "dinov2": ("dict", "numpy"),
+        "dinov3": ("dict", "numpy"),
+        "embedseg": ("dict", "numpy"),
+        "instanseg": ("dict", "numpy"),
+        "megaseg": ("dict", "numpy"),
+        "microsam": ("dict", "numpy"),
         "recursionpharma/OpenPhenom": ("dict", "numpy"),
+        "scdino": ("dict", "numpy"),
+        "stardist": ("dict", "numpy"),
         "subcell": ("dict", "numpy"),
         "trackastra": ("dict", "dict"),
+        "ultrack": ("dict", "numpy"),
         "vit": ("dict", "numpy"),
     }
 

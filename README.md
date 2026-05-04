@@ -18,14 +18,13 @@ All wraps are deployed with [Nix](https://nixos.org/) and run on GPU (`cuda:0` o
 
 | Model | Output | Notes |
 |---|---|---|
-| [DINOv2](https://github.com/afermg/dinov2) | `(N, D)` cls token | Generalist self-supervised visual features. |
-| [DINOv3](https://github.com/afermg/dinov3) | `(N, D)` cls token | Latest iteration of DINO. Direct factory imports (skips `torch.hub.load`). |
-| [ViT](https://github.com/afermg/nahual_vit) | `(N, D)` | HuggingFace ViTs incl. [OpenPhenom](https://huggingface.co/recursionpharma/OpenPhenom) and [MorphEM](https://huggingface.co/CaicedoLab/MorphEm). |
-| [SubCell](https://github.com/afermg/SubCellPortable) | `(N, D)` | Single-cell morphology + protein-localisation encoder. |
+| [DINOv2](https://github.com/afermg/dinov2) | `(N, D)` cls token — D = 384 (S/14), 768 (B/14), 1024 (L/14), 1536 (G/14) | Generalist self-supervised visual features. |
+| [DINOv3](https://github.com/afermg/dinov3) | `(N, D)` cls token — D = 384 (S/16), 768 (B/16), 1024 (L/16), 1536 (G/16) | Latest iteration of DINO. Direct factory imports (skips `torch.hub.load`). |
+| [ViT](https://github.com/afermg/nahual_vit) | `(N, 384)` (OpenPhenom); `(N, 384 × C)` (MorphEm, per-channel cls concatenated) | HuggingFace ViTs incl. [OpenPhenom](https://huggingface.co/recursionpharma/OpenPhenom) and [MorphEM](https://huggingface.co/CaicedoLab/MorphEm). |
+| [SubCell](https://github.com/afermg/SubCellPortable) | `(N, 1536)` | Single-cell morphology + protein-localisation encoder. |
 | [scDINO](https://github.com/afermg/scDINO) | `(N, 384)` | Self-supervised ViT-S/B for multi-channel single-cell images. |
 | [ChannelSFormer](https://github.com/afermg/ChannelSFormer) | `(N, 384)` | Channel-agnostic ViT for cell-painting (insitro). |
 | [DeepProfiler (CPCNNv1)](https://github.com/afermg/DeepProfiler) | `(N, 2048)` | TensorFlow ResNet50V2 ImageNet morphological profiler. |
-| [CellWhisperer](https://github.com/afermg/CellWhisperer) | `(N_cells, hidden_size)` | Multimodal scRNA-seq + language model — input is `(N_cells, N_genes)`, not NCZYX. |
 
 ### Segmentation
 
@@ -53,6 +52,18 @@ All wraps are deployed with [Nix](https://nixos.org/) and run on GPU (`cuda:0` o
 | Model | Output | Notes |
 |---|---|---|
 | [BioImage Model Zoo](https://github.com/afermg/nahual_bioimageio) | depends on RDF | One server, any RDF identifier (DOI / Zenodo URL / nickname like `affable-shark` / local rdf.yaml). Four GPU-validated flake variants: `apps.default` (ONNX/TorchScript), `apps.with-careamics`, `apps.with-stardist`, `apps.with-monai`. 21 well-known BIMZ models pre-validated; see the repo README for the full table. TF 1.15 SavedModels can't load (bioimageio.core 0.10.2 routes through Keras 3 `TFSMLayer`); RDFs that publish only `pytorch_state_dict` aren't usable through `default` (use a model-specific wrap from above). |
+
+## Wrapped, outside the supported categories
+
+These models are deployable through Nahual today (same `setup` / `process` API,
+same Nix-launched server) but don't fit any of the categories above and aren't
+covered by the project's supported scope — input/output conventions differ, and
+no guarantees are made about keeping them aligned with future API changes.
+Listed here so users can find them, not as recommended building blocks.
+
+| Model | Output | Notes |
+|---|---|---|
+| [CellWhisperer](https://github.com/afermg/CellWhisperer) | `(N_cells, hidden_size)` | Multimodal scRNA-seq + language model — input is `(N_cells, N_genes)`, not NCZYX. Single-cell transcriptomics, not imaging. |
 
 ## Considered but not wrapped
 
