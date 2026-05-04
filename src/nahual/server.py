@@ -11,29 +11,54 @@ from pynng.nng import Socket
 from nahual.serial import deserialize_numpy, serialize_numpy
 
 
+def _is_setup_message(payload: bytes) -> bool:
+    """Heuristic dispatch on the wire payload.
+
+    The wire format already cleanly distinguishes the two payload shapes:
+    - numpy.ndarray packets (see ``nahual.serial.serialize_numpy``) start with
+      a single-byte dtype character (e.g. ``b'f'``, ``b'd'``, ``b'B'``)
+      followed by an ndim byte and packed shape — never with ``b'{'``.
+    - dict packets are produced by ``json.dumps(...).encode()`` and therefore
+      always start with the ASCII ``b'{'`` byte.
+
+    So peeking at the first byte is sufficient and does not change the wire
+    format at all.
+    """
+    return len(payload) > 0 and payload[:1] == b"{"
+
+
 async def responder(sock: Socket, setup: Callable, processor: Callable = None):
     """Asynchronous responder function for handling model setup and data processing.
 
-        This function continuously listens for incoming messages via a socket. It handles two
-        modes: initializing a model based on received parameters and processing data using
-        an already loaded model.
+    This function continuously listens for incoming messages via a socket. It
+    dispatches each message by payload type using the existing wire format:
 
-        Parameters
-        ----------
-            sock: pynng. (object): The socket object used for receiving and sending messages.
+    - dict-shaped (JSON) messages always trigger ``setup(**payload)``,
+      replacing the currently-loaded ``processor`` in place. This lets a
+      single long-lived server load model A, run it, then load model B and
+      run it without restarting the daemon.
+    - numpy-shaped messages are forwarded to the currently-loaded
+      ``processor``.
 
-        Returns
-        -------
-            None: This function does not return a value but sends responses via the socket.
+    Sending a dict before any setup also works (this is the usual cold-start
+    path).
 
-        Raises
-        ------
-            Exception: If an error occurs during message handling or processing.
+    Parameters
+    ----------
+        sock: pynng. (object): The socket object used for receiving and sending messages.
+
+    Returns
+    -------
+        None: This function does not return a value but sends responses via the socket.
+
+    Raises
+    ------
+        Exception: If an error occurs during message handling or processing.
 
 
     Notes:
         - The function uses JSON for parameters serialization.
-        - The 'setup' function is called to initialize the model.
+        - The 'setup' function is called (or re-called) on every dict message.
         - The 'process' function is used to compute results from input data.
     """
 
@@ -41,14 +66,17 @@ async def responder(sock: Socket, setup: Callable, processor: Callable = None):
     while True:
         try:
             msg = await sock.arecv_msg()
+            payload = msg.bytes
 
-            # if len(msg.bytes) == 1:
-            #     print("Exiting")
-            #     break
-
-            if processor is None:
+            if _is_setup_message(payload):
+                stage = "Model loading"
                 processor = await setup_content(msg, sock, setup)
             else:
+                if processor is None:
+                    raise RuntimeError(
+                        "Received a non-dict (numpy) message but no model has "
+                        "been loaded yet. Call setup with a dict first."
+                    )
                 stage = "Data processing"
                 await process_content(msg, sock, processor)
 
