@@ -1,13 +1,13 @@
 """
-This example uses a server within the environment defined on `https://github.com/afermg/cellSAM.git` (branch `nahual-wrap`).
+This example uses a server within the environment defined on `https://github.com/afermg/cellSAM.git`.
 
-Run `nix run github:afermg/cellSAM/nahual-wrap -- ipc:///tmp/cellsam.ipc` from any
-directory, or `nix develop --command bash -c "python server.py ipc:///tmp/cellsam.ipc"`
-from the root of that repository.
+Run `nix run github:afermg/cellSAM -- ipc:///tmp/cellsam.ipc` from any directory,
+or `nix develop --command bash -c "python server.py ipc:///tmp/cellsam.ipc"`
+from the root of that repository. The default branch is the no-auth ONNX wrap;
+the original DeepCell-auth path lives on the `nahual-wrap-deepcell` branch.
 
-This is the original PyTorch path; it requires `DEEPCELL_ACCESS_TOKEN` to be set
-in the server environment (https://users.deepcell.org). For an auth-free
-alternative see `cellsam_onnx.py`.
+ONNX-only path — no DeepCell auth required. Weights are pulled from the
+`keejkrej/cellsam-onnx` HuggingFace repo on first call.
 """
 
 import numpy
@@ -19,20 +19,19 @@ address = "ipc:///tmp/cellsam.ipc"
 
 # %% Load model server-side.
 parameters = {
-    "model_name": "cellsam_general",
     # optional
+    # "weights_dir": "/path/to/cached/onnx/weights",
     # "device": 0,
-    # "version": None,
+    # "providers": ["CUDAExecutionProvider", "CPUExecutionProvider"],
     # "bbox_threshold": 0.4,
-    # "normalize": True,
-    # "postprocess": False,
-    # "remove_boundaries": False,
-    # "fast": False,
+    # "iou_threshold": 0.5,
+    # "mask_threshold": 0.5,
+    # "min_size": 25,
 }
 response = setup(parameters, address=address)
 print(response)
 
-# %% Define custom data — NCZYX, Z is squeezed (model operates in 2-D).
+# %% Define custom data — NCZYX, float32.
 numpy.random.seed(seed=42)
 data = numpy.random.random_sample((1, 1, 1, 512, 512)).astype(numpy.float32)
 result = process(data, address=address)
