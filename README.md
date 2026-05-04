@@ -10,20 +10,57 @@ Potential solution: I figured that if we can move parameters and numpy arrays be
 
 Thus the goal of this tool is provide a way to deploy model(s) in one (or many) environments, and access them from another one, usually an orchestrator.
 
-## Available models and tools 
-I deployed tools using [Nix](https://nixos.org/).
+## Available models and tools
 
-- [BABY](https://github.com/afermg/baby): Segmentation, tracking and lineage assignment for budding yeast.
-- [Cellpose](https://github.com/afermg/cellpose): Generalist segmentation model.
-- [DINOv2](https://github.com/afermg/dinov2): Generalist self-supervised model to obtain visual features.
-- [Trackastra](https://github.com/afermg/trackastra): Transformer-based tracking trained on a multitude of datasets.
-- [ViT](https://github.com/afermg/nahual_vit): HuggingFace's Visual Transformers model. [OpenPhenom](https://huggingface.co/recursionpharma/OpenPhenom), [MorphEM](https://huggingface.co/CaicedoLab/MorphEm). 
-- [SubCell](https://github.com/afermg/SubCellPortable): Encoder of single cell morphology and protein localisation.
-- [DINOv3](https://github.com/afermg/dinov3): Generalist self-supervised model, latest iteration.
+All wraps are deployed with [Nix](https://nixos.org/) and run on GPU (`cuda:0` or `GPU:0`). Launch any of them with `nix run github:afermg/<repo> -- ipc:///tmp/<name>.ipc`. With `nahual >= 0.0.9` a single server can host multiple `setup()` calls — re-call setup with a new dict to swap models without restarting.
 
-## Future supported tools
-- [DeepProfiler](https://github.com/cytomining/DeepProfiler)
-- [scDINO](https://github.com/JacobHanimann/scDINO)
+### Embeddings / feature extraction
+
+| Model | Output | Notes |
+|---|---|---|
+| [DINOv2](https://github.com/afermg/dinov2) | `(N, D)` cls token | Generalist self-supervised visual features. |
+| [DINOv3](https://github.com/afermg/dinov3) | `(N, D)` cls token | Latest iteration of DINO. Direct factory imports (skips `torch.hub.load`). |
+| [ViT](https://github.com/afermg/nahual_vit) | `(N, D)` | HuggingFace ViTs incl. [OpenPhenom](https://huggingface.co/recursionpharma/OpenPhenom) and [MorphEM](https://huggingface.co/CaicedoLab/MorphEm). |
+| [SubCell](https://github.com/afermg/SubCellPortable) | `(N, D)` | Single-cell morphology + protein-localisation encoder. |
+| [scDINO](https://github.com/afermg/scDINO) | `(N, 384)` | Self-supervised ViT-S/B for multi-channel single-cell images. |
+| [ChannelSFormer](https://github.com/afermg/ChannelSFormer) | `(N, 384)` | Channel-agnostic ViT for cell-painting (insitro). |
+| [DeepProfiler (CPCNNv1)](https://github.com/afermg/DeepProfiler) | `(N, 2048)` | TensorFlow ResNet50V2 ImageNet morphological profiler. |
+| [CellWhisperer](https://github.com/afermg/CellWhisperer) | `(N_cells, hidden_size)` | Multimodal scRNA-seq + language model — input is `(N_cells, N_genes)`, not NCZYX. |
+
+### Segmentation
+
+| Model | Output | Notes |
+|---|---|---|
+| [BABY](https://github.com/afermg/baby) | yeast labels + lineage | Budding-yeast seg, tracking, lineage. |
+| [Cellpose](https://github.com/afermg/cellpose) | `(H, W)` instance mask | Generalist segmentation. |
+| [StarDist](https://github.com/afermg/stardist) | `(N, H, W)` int32 | Star-convex polygon segmentation, TF backend. |
+| [EmbedSeg](https://github.com/afermg/EmbedSeg) | `(N, H, W)` int32 | Embedding-based instance segmentation (PyTorch). |
+| [InstanSeg](https://github.com/afermg/instanseg) | `(N, H, W)` int32 | Fast cell segmentation across biomarkers. |
+| [MegaSeg](https://github.com/afermg/allencell-segmenter-ml) | `(N, 1, Z, Y, X)` uint8 | Allen Institute MegaSegmenter — 3-D, Hydra/napari-free inference. |
+| [micro-sam](https://github.com/afermg/micro-sam) | `(N, H, W)` int32 | SAM tuned for microscopy. All conda-only deps (vigra, nifty, affogato, torch_em, python-elf) packaged as proper Nix derivations. Cold-cache build ~30 min — pre-warm with `nix develop --impure --command true`. |
+| [CellSAM](https://github.com/afermg/cellSAM) (`nahual-wrap-onnx`, recommended) | `(N, H, W)` int32 | ONNX-only foundation model, no auth. Backed by [keejkrej/cellsam-onnx](https://huggingface.co/keejkrej/cellsam-onnx); license is *Modified Apache 2.0, academic-only*. |
+| [CellSAM](https://github.com/afermg/cellSAM) (`nahual-wrap`) | `(N, H, W)` int32 | Original PyTorch path; needs `DEEPCELL_ACCESS_TOKEN` (https://users.deepcell.org). |
+
+### Tracking
+
+| Model | Output | Notes |
+|---|---|---|
+| [Trackastra](https://github.com/afermg/trackastra) | track IDs across timepoints | Transformer-based tracking. |
+| [Ultrack](https://github.com/afermg/ultrack) | `(T, Z, Y, X)` int32 | ILP-based tracking + segmentation. Tracking core CPU-bound (CBC/CLP solver); optional torch detection nets are GPU-capable. |
+
+### Generic loaders
+
+| Model | Output | Notes |
+|---|---|---|
+| [BioImage Model Zoo](https://github.com/afermg/nahual_bioimageio) | depends on RDF | One server, any RDF identifier (DOI / Zenodo URL / nickname like `affable-shark` / local rdf.yaml). Four GPU-validated flake variants: `apps.default` (ONNX/TorchScript), `apps.with-careamics`, `apps.with-stardist`, `apps.with-monai`. 21 well-known BIMZ models pre-validated; see the repo README for the full table. TF 1.15 SavedModels can't load (bioimageio.core 0.10.2 routes through Keras 3 `TFSMLayer`); RDFs that publish only `pytorch_state_dict` aren't usable through `default` (use a model-specific wrap from above). |
+
+## Considered but not wrapped
+
+- **ilastik** — interactive ML pipeline (Qt-based), not a single-shot inference model.
+- **MCMICRO** — Nextflow pipeline orchestrator; doesn't fit the single-server pattern.
+- **Cytoself** ([afermg/cytoself](https://github.com/afermg/cytoself)) — VQ-VAE produces spatial token grids `(N, 64, H, W)` rather than flat embeddings.
+- **CellDino** ([afermg/CellDino](https://github.com/afermg/CellDino)) — Mask-DINO instance-seg + tracking; upstream has not released pretrained weights, and the inference path needs CUDA-compiled `MSDeformAttn` + mmcv extensions that are non-trivial to package under Nix.
+- **Micronucleus detector / CHAMMI-75 / Virtual staining** — discussion-mentioned but no public upstream URL was provided.
 
 ## Usage
 ### Step 1: Deploy server
