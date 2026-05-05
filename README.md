@@ -124,9 +124,7 @@ To reduce maintenance burden, we support only the necessary data types:
 Any model requires a thin layer that communicates using [nng](https://github.com/nanomsg/nng). You can see an example of trackastra's [server](https://github.com/afermg/trackastra/blob/main/server.py) and [client](./examples/trackastra.py).
 	
 ## Roadmap
-- Support multiple instances of a model loaded on memory server-side.
 - Formalize supported packet formats: (e.g., numpy arrays, dictionary).
-- Increase number of supported models/methods.	
 - Document server-side API.
 - Integrate into the [aliby](github.com/afermg/aliby) pipelining framework, in a way that is agnostic to which model is being used.
 - Support containers that wrap the Nix derivations.
