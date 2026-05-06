@@ -1,7 +1,16 @@
+import os
+
 import pynng
 
+# Default IPC timeout, overridable via NAHUAL_IPC_TIMEOUT_MS. 300_000 ms = 5
+# minutes -- well above any legitimate server latency (model load, large
+# inference) but bounded so a stuck server can't deadlock the client.
+_DEFAULT_TIMEOUT_MS = int(os.environ.get("NAHUAL_IPC_TIMEOUT_MS", "300000"))
 
-def request_receive(packet: bytes, address: str) -> bytes:
+
+def request_receive(
+    packet: bytes, address: str, timeout_ms: int | None = None
+) -> bytes:
     """Send a request and receive a response using pynng.
 
     Parameters
@@ -10,6 +19,10 @@ def request_receive(packet: bytes, address: str) -> bytes:
         The data to send in the request.
     address : str, optional
         The endpoint address to connect to, such as "ipc:///tmp/reqrep.ipc".
+    timeout_ms : int or None, optional
+        Per-call send/recv timeout in milliseconds. Defaults to the value of
+        the ``NAHUAL_IPC_TIMEOUT_MS`` environment variable, or 300000 (5 min)
+        if unset. Set ``-1`` to wait indefinitely (legacy behaviour).
 
     Returns
     -------
@@ -19,7 +32,7 @@ def request_receive(packet: bytes, address: str) -> bytes:
     Raises
     ------
     pynng.exceptions.Timeout
-        If the request times out.
+        If the request or response exceeds ``timeout_ms``.
 
     Notes
     ------
@@ -27,7 +40,9 @@ def request_receive(packet: bytes, address: str) -> bytes:
     in one thread.
 
     """
-    with pynng.Req0() as sock:
+    if timeout_ms is None:
+        timeout_ms = _DEFAULT_TIMEOUT_MS
+    with pynng.Req0(send_timeout=timeout_ms, recv_timeout=timeout_ms) as sock:
         sock.dial(address)
         print(f"REQ: SENDING {len(packet)} bytes to {address}")
         sock.send(packet)
