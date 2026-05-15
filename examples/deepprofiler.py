@@ -17,7 +17,14 @@ setup, process = dispatch_setup_process("deepprofiler")
 address = "ipc:///tmp/deepprofiler.ipc"
 
 # %% Load model server-side (server defaults: ResNet50V2 + ImageNet weights).
-parameters = {}
+parameters = {
+    # optional
+    # "backbone": "resnet50v2",
+    # "weights": "imagenet",  # or a path to a .h5 checkpoint, or None
+    # "expected_channels": 3,
+    # "input_size": 224,
+    # "device": 0,  # None → GPU:0 if visible, else CPU
+}
 response = setup(parameters, address=address)
 print(response)
 

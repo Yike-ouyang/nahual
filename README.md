@@ -18,13 +18,13 @@ All wraps are deployed with [Nix](https://nixos.org/) and run on GPU (`cuda:0` o
 
 | Model | Output | Notes |
 |---|---|---|
-| [DINOv2](https://github.com/afermg/dinov2) | `(N, D)` cls token — D = 384 (S/14), 768 (B/14), 1024 (L/14), 1536 (G/14) | Generalist self-supervised visual features. |
-| [DINOv3](https://github.com/afermg/dinov3) | `(N, D)` cls token — D = 384 (S/16), 768 (B/16), 1024 (L/16), 1536 (G/16) | Latest iteration of DINO. Direct factory imports (skips `torch.hub.load`). |
+| [DINOv2](https://github.com/afermg/dinov2) | `(N, D · ⌈C/3⌉)` cls token — D = 384 (S/14), 768 (B/14), 1024 (L/14), 1536 (G/14) | Generalist self-supervised visual features. Rigid 3-channel ImageNet backbone; inputs with C ≠ 3 run through `⌈C/3⌉` passes (recycling leading channels in the trailing chunk) and per-chunk cls tokens are concatenated. |
+| [DINOv3](https://github.com/afermg/dinov3) | `(N, D · ⌈C/3⌉)` cls token — D = 384 (S/16), 768 (B/16), 1024 (L/16), 1536 (G/16) | Latest iteration of DINO. Same multi-pass channel handling as DINOv2. Direct factory imports (skips `torch.hub.load`). |
 | [ViT](https://github.com/afermg/nahual_vit) | `(N, 384)` (OpenPhenom); `(N, 384 × C)` (MorphEm, per-channel cls concatenated) | HuggingFace ViTs incl. [OpenPhenom](https://huggingface.co/recursionpharma/OpenPhenom) and [MorphEM](https://huggingface.co/CaicedoLab/MorphEm). |
 | [SubCell](https://github.com/afermg/SubCellPortable) | `(N, 1536)` | Single-cell morphology + protein-localisation encoder. |
 | [scDINO](https://github.com/afermg/scDINO) | `(N, 384)` | Self-supervised ViT-S/B for multi-channel single-cell images. |
 | [ChannelSFormer](https://github.com/afermg/ChannelSFormer) | `(N, 384)` | Channel-agnostic ViT for cell-painting (insitro). |
-| [DeepProfiler (CPCNNv1)](https://github.com/afermg/DeepProfiler) | `(N, 2048)` | TensorFlow ResNet50V2 ImageNet morphological profiler. |
+| [DeepProfiler (CPCNNv1)](https://github.com/afermg/DeepProfiler) | `(N, 2048 · ⌈C/3⌉)` | TensorFlow ResNet50V2 ImageNet morphological profiler. Same multi-pass channel handling as DINOv2/v3. |
 
 ### Segmentation
 
