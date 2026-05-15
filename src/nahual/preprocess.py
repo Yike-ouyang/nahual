@@ -9,6 +9,48 @@ def validate_input_shape(input_yx: tuple[int], expected_tile_size: tuple[int]):
     )
 
 
+def channel_chunks_rigid3(pixels: numpy.ndarray) -> list[numpy.ndarray]:
+    """Split an N-channel image into 3-channel chunks for a rigid 3-channel
+    backbone (ImageNet-pretrained ViTs, ResNets, etc.).
+
+    Drops the Z axis if present (takes the first slice, matching
+    :func:`pad_channel_dim`'s convention). Accepts ``(N, C, Z, Y, X)`` or
+    ``(N, C, Y, X)``; all returned chunks are 4-D ``(N, 3, Y, X)``.
+
+    - ``C == 3``: single chunk, input as-is.
+    - ``C  < 3``: single chunk, zero-padded to 3 channels.
+    - ``C  > 3``: ``ceil(C / 3)`` chunks. Missing slots in the trailing chunk
+      recycle leading channels (modular wrap):
+
+      ====  ====================================
+       C    chunk channel indices
+      ====  ====================================
+       4    ``[(0,1,2), (3,0,1)]``
+       5    ``[(0,1,2), (3,4,0)]``
+       6    ``[(0,1,2), (3,4,5)]``
+       7    ``[(0,1,2), (3,4,5), (6,0,1)]``
+      ====  ====================================
+
+    Callers concatenate the per-chunk feature outputs along the feature axis
+    to produce a ``(N, D · ceil(C/3))`` embedding.
+    """
+    if pixels.ndim == 5:
+        pixels = pixels[:, :, 0]
+    if pixels.ndim != 4:
+        raise ValueError(
+            f"Expected (N, C, Z, Y, X) or (N, C, Y, X), got shape {pixels.shape}"
+        )
+    n, c = pixels.shape[:2]
+    if c == 3:
+        return [pixels]
+    if c < 3:
+        padded = numpy.zeros((n, 3, *pixels.shape[2:]), dtype=pixels.dtype)
+        padded[:, :c] = pixels
+        return [padded]
+    num_rounds = (c + 2) // 3  # ceil(c / 3)
+    return [pixels[:, [(r * 3 + i) % c for i in range(3)]] for r in range(num_rounds)]
+
+
 def pad_channel_dim(pixels: numpy.ndarray, expected_channels: int) -> numpy.ndarray:
     """Pads the channel dimension of a numpy array to a target size.
 
