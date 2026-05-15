@@ -43,6 +43,10 @@ def pad_channel_dim(pixels: numpy.ndarray, expected_channels: int) -> numpy.ndar
     if pixels.ndim > 2:
         pixels = pixels[:, :, 0]
 
+    # None signals "no padding constraint" (e.g. channel-agnostic models).
+    if expected_channels is None:
+        return pixels
+
     input_channels = pixels.shape[1]
     to_pad = expected_channels - input_channels
 
