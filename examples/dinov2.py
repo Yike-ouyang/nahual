@@ -15,7 +15,7 @@ address = "ipc:///tmp/dinov2.ipc"
 # %%Load models server-side
 parameters = {
     "repo_or_dir": "facebookresearch/dinov2",
-    "model_name": "dinov2_vits14_lc",
+    "model_name": "dinov2_vits14",
     # optional
     "pretrained": "False",
     "device": 1,
