@@ -85,10 +85,18 @@ async def responder(sock: Socket, setup: Callable, processor: Callable = None):
             time.sleep(1)
         except Exception as e:
             print(f"{stage} failed: {e}")
-            # Send back an empty dictionary if things did not work,
-            # to avoid blocking the client.
-            print("Sending empty dict")
-            await sock.asend(json.dumps({}).encode())
+            # Send back a typed error envelope so the client can distinguish
+            # a real failure from a valid numpy/dict payload. Previously we
+            # sent ``json.dumps({}).encode()`` ("empty dict"), which the
+            # client deserialized as a malformed numpy header (the famous
+            # "unpack requires a buffer of 2 bytes" / "Header: {}" error)
+            # and silently treated as data. The 0x21 ("!") prefix is
+            # unambiguous against:
+            #   * numpy.serialize_numpy: starts with a dtype char (letter)
+            #   * setup replies / JSON dicts: start with '{' (0x7B)
+            print("Sending error envelope")
+            envelope = b"!" + json.dumps({"error": str(e), "stage": stage}).encode()
+            await sock.asend(envelope)
 
 
 async def setup_content(msg, sock, setup: Callable) -> Callable:

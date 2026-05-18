@@ -1,3 +1,4 @@
+import json
 import os
 
 import pynng
@@ -49,4 +50,11 @@ def request_receive(
         response = sock.recv_msg()
         response_bytes = response.bytes
         print(f"REQ: RECEIVED {len(response_bytes)} bytes")
+        # Server signals failure with a b"!" prefix + JSON body. Raise so the
+        # caller sees a real error instead of a malformed numpy header.
+        if response_bytes[:1] == b"!":
+            info = json.loads(response_bytes[1:].decode())
+            raise RuntimeError(
+                f"nahual server error in stage '{info.get('stage')}': {info.get('error')}"
+            )
         return response_bytes
