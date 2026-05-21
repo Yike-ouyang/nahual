@@ -12,7 +12,7 @@ Thus the goal of this tool is provide a way to deploy model(s) in one (or many) 
 
 ## Available models and tools
 
-All wraps are deployed with [Nix](https://nixos.org/) and run on GPU (`cuda:0` or `GPU:0`). Launch any of them with `nix run github:afermg/<repo> -- ipc:///tmp/<name>.ipc`. With `nahual >= 0.0.9` a single server can host multiple `setup()` calls — re-call setup with a new dict to swap models without restarting.
+Most wraps were originally developed around [Nix](https://nixos.org/) and run on GPU (`cuda:0` or `GPU:0`). If you already use Nix, you can still launch a wrap with `nix run github:afermg/<repo> -- ipc:///tmp/<name>.ipc`. If you prefer plain Python environments, the example below shows how to run the full DINOv2 pipeline with `uv` only. With `nahual >= 0.0.9` a single server can host multiple `setup()` calls — re-call setup with a new dict to swap models without restarting.
 
 ### Embeddings / feature extraction
 
@@ -73,32 +73,64 @@ Listed here so users can find them, not as recommended building blocks.
 - **Micronucleus detector / CHAMMI-75 / Virtual staining** — discussion-mentioned but no public upstream URL was provided.
 
 ## Usage
-### Step 1: Deploy server
-`cd` to the model you want to deploy. In this case we will test the image embedding model DINOv2.
+### Step 1: Deploy server with `uv` only
+This example uses two separate Python environments managed by `uv`:
+
+- one environment for `nahual` (client/orchestrator)
+- one environment for `dinov2` (server/model runtime)
+
+That preserves the original isolation goal of Nahual without relying on `nix`.
 
 ```bash
-git clone https://github.com/afermg/dinov2.git
-cd dinov2
-nix develop --command bash -c "python server.py ipc:///tmp/dinov2.ipc"
+git clone https://github.com/Yike-ouyang/nahual.git
+git clone https://github.com/Yike-ouyang/dinov2.git
+
+cd nahual
+uv sync
+
+cd ../dinov2
+uv venv --python 3.11
+uv pip install --python .venv/bin/python -r requirements.txt
+uv pip install --python .venv/bin/python trio pynng
+uv pip install --python .venv/bin/python -e .
+uv pip install --python .venv/bin/python -e ../nahual
+uv run --python .venv/bin/python python server.py ipc:///tmp/dinov2.ipc
 ```
+
+Notes:
+
+- `server.py` asserts that CUDA is available, so this path is GPU-only.
+- `uv pip install -r requirements.txt` uses the upstream DINOv2 requirements file, including the PyTorch extra index.
+- Installing `nahual` into the `dinov2` environment is required because `server.py` imports `nahual.preprocess` and `nahual.server`.
 
 ### Step 2: Run client
 Once the server is running, you can call it from a different python script.
 ```python
+from pathlib import Path
+
 import numpy
 
 from nahual.process import dispatch_setup_process
 
 setup, process = dispatch_setup_process("dinov2")
 address = "ipc:///tmp/dinov2.ipc"
+repo_or_dir = Path("../dinov2").resolve()
 
 # %%Load models server-side
-parameters = {"repo_or_dir": "facebookresearch/dinov2", "model": "dinov2_vits14_lc"}
+parameters = {"repo_or_dir": str(repo_or_dir), "model_name": "dinov2_vits14", "device": 0}
 response = setup(parameters, address=address)
 
 # %% Define custom data
-data = numpy.random.random_sample((1, 3, 420, 420))
-result = process(data + 1000, address=address)
+tile_size = 224  # multiples of 14
+data = numpy.random.random_sample((1, 3, 1, tile_size, tile_size))
+result = process(data, address=address)
+```
+
+If you want to run the bundled example script directly:
+
+```bash
+cd ../nahual
+uv run python examples/dinov2.py
 ```
 
 You can press `C-c C-c` from the terminal where the server lives to kill it. We will also add a way to kill the server from within the client.
@@ -117,7 +149,7 @@ To reduce maintenance burden, we support only the necessary data types:
 - Numpy arrays (and numpy-able lists/tuples): The main type of data we deal with.
 
 ### Tech stack 
-- Model/tool deployment I use [Nix](https://nixos.org/), and at the moment do not plan to support containers. The logic behind  gives me unique guarantees of reproducibility, whilst allowing me to use bleeding edge models and libraries.
+- Model/tool deployment: my primary deployment path is still [Nix](https://nixos.org/), and at the moment I do not plan to support containers. The `uv` example above is the lightweight alternative when you want plain Python environments instead of Nix. The logic behind Nix gives me unique guarantees of reproducibility, whilst allowing me to use bleeding edge models and libraries.
 - Transport layer I use [pynng](github.com/codypiersall/pynng), I like that it is very minimalistic and provides easy-to-reproduce [examples](https://github.com/codypiersall/pynng/tree/7fd3d76573c3cb40c1e5f7e10d4a6091e411b9c2/examples). An alternative would have been `gRPC` + `protobuf`, but since I am trying to understand the constraints and tradeoffs I do not want to commit to a big framework unless I have a compelling reason to do so.
 
 ## Adding support for new models
@@ -131,4 +163,3 @@ Any model requires a thin layer that communicates using [nng](https://github.com
 
 ## Why nahual?
 In Mesoamerican folklore, a Nahual is a shaman able to transform into different animals.
-

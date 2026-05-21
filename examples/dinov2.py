@@ -2,8 +2,17 @@
 """
 This example uses a server within the environment defined on `https://github.com/afermg/dinov2.git`.
 
-Run `nix develop --command bash -c "python server.py ipc:///tmp/dinov2.ipc"` from the root directory of that repository.
+One `uv`-only way to launch the server from the repository root is:
+
+`uv venv --python 3.11`
+`uv pip install --python .venv/bin/python -r requirements.txt`
+`uv pip install --python .venv/bin/python trio pynng`
+`uv pip install --python .venv/bin/python -e .`
+`uv pip install --python .venv/bin/python -e ../nahual`
+`uv run --python .venv/bin/python python server.py ipc:///tmp/dinov2.ipc`
 """
+
+from pathlib import Path
 
 import numpy
 
@@ -11,14 +20,13 @@ from nahual.process import dispatch_setup_process
 
 setup, process = dispatch_setup_process("dinov2")
 address = "ipc:///tmp/dinov2.ipc"
+repo_or_dir = Path(__file__).resolve().parents[2] / "dinov2"
 
 # %%Load models server-side
 parameters = {
-    "repo_or_dir": "facebookresearch/dinov2",
+    "repo_or_dir": str(repo_or_dir) if repo_or_dir.exists() else "facebookresearch/dinov2",
     "model_name": "dinov2_vits14",
-    # optional
-    "pretrained": "False",
-    "device": 1,
+    "device": 0,
 }
 response = setup(parameters, address=address)
 # print(dinov2.blocks[0].attn.qkv.weight[0, :1])
