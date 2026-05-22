@@ -1698,7 +1698,7 @@ wheels = [
 
 [[package]]
 name = "nahual"
-version = "0.0.8"
+version = "0.0.10"
 source = { editable = "." }
 dependencies = [
     { name = "loguru" },
