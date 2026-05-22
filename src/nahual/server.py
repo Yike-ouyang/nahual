@@ -2,6 +2,7 @@
 
 import json
 import time
+import traceback
 from typing import Callable
 
 import numpy
@@ -85,6 +86,7 @@ async def responder(sock: Socket, setup: Callable, processor: Callable = None):
             time.sleep(1)
         except Exception as e:
             print(f"{stage} failed: {e}")
+            traceback.print_exc()
             # Send back a typed error envelope so the client can distinguish
             # a real failure from a valid numpy/dict payload. Previously we
             # sent ``json.dumps({}).encode()`` ("empty dict"), which the
