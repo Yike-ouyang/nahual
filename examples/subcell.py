@@ -3,7 +3,7 @@ This example uses a server within the environment defined on `https://github.com
 
 Run `nix run github:afermg/subcellportable` from the root directory of that repository.
 """
-
+#uv run python examples/subcell.py
 import numpy
 
 from nahual.process import dispatch_setup_process
