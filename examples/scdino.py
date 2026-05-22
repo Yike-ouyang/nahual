@@ -1,7 +1,7 @@
 """
 This example uses a server within the environment defined on `https://github.com/afermg/scDINO.git`.
 
-Run `nix run github:afermg/scDINO -- ipc:///tmp/scdino.ipc` from the root directory of that repository.
+Run `nix run github:afermg/scDINO -- tcp://127.0.0.1:5111` from the root directory of that repository.
 """
 
 import numpy
@@ -9,7 +9,7 @@ import numpy
 from nahual.process import dispatch_setup_process
 
 setup, process = dispatch_setup_process("scdino")
-address = "ipc:///tmp/scdino.ipc"
+address = "tcp://127.0.0.1:5111"
 
 # %% Load model server-side (random init by default; pass `weights` for a checkpoint).
 parameters = {

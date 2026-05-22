@@ -12,7 +12,7 @@ Thus the goal of this tool is provide a way to deploy model(s) in one (or many) 
 
 ## Available models and tools
 
-Most wraps were originally developed around [Nix](https://nixos.org/) and run on GPU (`cuda:0` or `GPU:0`). If you already use Nix, you can still launch a wrap with `nix run github:afermg/<repo> -- ipc:///tmp/<name>.ipc`. If you prefer plain Python environments, the example below shows how to run the full DINOv2 pipeline with `uv` only. With `nahual >= 0.0.9` a single server can host multiple `setup()` calls — re-call setup with a new dict to swap models without restarting.
+Most wraps were originally developed around [Nix](https://nixos.org/) and run on GPU (`cuda:0` or `GPU:0`). If you already use Nix, you can still launch a wrap with `nix run github:afermg/<repo> -- tcp://127.0.0.1:5100`. If you prefer plain Python environments, the example below shows how to run the full DINOv2 pipeline with `uv` only. With `nahual >= 0.0.9` a single server can host multiple `setup()` calls — re-call setup with a new dict to swap models without restarting.
 
 ### Embeddings / feature extraction
 
@@ -94,7 +94,7 @@ uv pip install --python .venv/bin/python -r requirements.txt
 uv pip install --python .venv/bin/python trio pynng
 uv pip install --python .venv/bin/python -e .
 uv pip install --python .venv/bin/python -e ../nahual
-uv run --python .venv/bin/python python server.py ipc:///tmp/dinov2.ipc
+uv run --python .venv/bin/python python server.py tcp://0.0.0.0:5100
 ```
 
 Notes:
@@ -102,6 +102,8 @@ Notes:
 - `server.py` asserts that CUDA is available, so this path is GPU-only.
 - `uv pip install -r requirements.txt` uses the upstream DINOv2 requirements file, including the PyTorch extra index.
 - Installing `nahual` into the `dinov2` environment is required because `server.py` imports `nahual.preprocess` and `nahual.server`.
+- For local-only usage, bind to `tcp://127.0.0.1:5100` instead of `0.0.0.0`.
+- On HPC, start the server on the compute node with `tcp://0.0.0.0:5100`, then connect the client to `tcp://<compute-node-hostname>:5100`.
 
 ### Step 2: Run client
 Once the server is running, you can call it from a different python script.
@@ -113,7 +115,7 @@ import numpy
 from nahual.process import dispatch_setup_process
 
 setup, process = dispatch_setup_process("dinov2")
-address = "ipc:///tmp/dinov2.ipc"
+address = "tcp://127.0.0.1:5100"
 repo_or_dir = Path("../dinov2").resolve()
 
 # %%Load models server-side

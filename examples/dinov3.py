@@ -2,8 +2,8 @@
 """
 This example uses a server within the environment defined on `https://github.com/afermg/dinov3.git`.
 
-Run `nix run github:afermg/dinov3 -- ipc:///tmp/dinov3.ipc` from any directory,
-or `nix develop --command bash -c "python server.py ipc:///tmp/dinov3.ipc"` from
+Run `nix run github:afermg/dinov3 -- tcp://127.0.0.1:5123` from any directory,
+or `nix develop --command bash -c "python server.py tcp://127.0.0.1:5123"` from
 the root of that repository.
 """
 
@@ -12,7 +12,7 @@ import numpy
 from nahual.process import dispatch_setup_process
 
 setup, process = dispatch_setup_process("dinov3")
-address = "ipc:///tmp/dinov3.ipc"
+address = "tcp://127.0.0.1:5123"
 
 # %%Load models server-side
 parameters = {

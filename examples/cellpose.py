@@ -2,7 +2,7 @@
 """
 This example uses a server within the environment defined on `https://github.com/afermg/dinov2.git`.
 
-Run `nix run github:afermg/cellpose/2146b5ee3b2c7eb2c826efe7a24b3b289432500b -- ipc:///tmp/cellpose.ipc"` from the root directory of that repository.
+Run `nix run github:afermg/cellpose/2146b5ee3b2c7eb2c826efe7a24b3b289432500b -- tcp://127.0.0.1:5117"` from the root directory of that repository.
 """
 
 import numpy
@@ -10,7 +10,7 @@ import numpy
 from nahual.process import dispatch_setup_process
 
 setup, process = dispatch_setup_process("cellpose")
-address = "ipc:///tmp/cellpose.ipc"
+address = "tcp://127.0.0.1:5117"
 
 # %%Load models server-side
 parameters = {"device": 1}

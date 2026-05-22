@@ -1,8 +1,8 @@
 """
 This example uses a server within the environment defined on `https://github.com/afermg/stardist.git` (branch `nahual-wrap`).
 
-Run `nix run github:afermg/stardist/nahual-wrap -- ipc:///tmp/stardist.ipc` from any
-directory, or `nix develop --command bash -c "python server.py ipc:///tmp/stardist.ipc"`
+Run `nix run github:afermg/stardist/nahual-wrap -- tcp://127.0.0.1:5119` from any
+directory, or `nix develop --command bash -c "python server.py tcp://127.0.0.1:5119"`
 from the root of that repository.
 """
 
@@ -11,7 +11,7 @@ import numpy
 from nahual.process import dispatch_setup_process
 
 setup, process = dispatch_setup_process("stardist")
-address = "ipc:///tmp/stardist.ipc"
+address = "tcp://127.0.0.1:5119"
 
 # %% Load model server-side. All keys are optional; the empty dict gets you
 # the default 2D fluorescence model on cuda:0.

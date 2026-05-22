@@ -1,8 +1,8 @@
 """
 This example uses a server within the environment defined on `https://github.com/afermg/ChannelSFormer.git`.
 
-Run `nix run --impure github:afermg/ChannelSFormer -- ipc:///tmp/channelsformer.ipc` from any directory, or
-`nix develop --command bash -c "python server.py ipc:///tmp/channelsformer.ipc"` from the root directory of that repository.
+Run `nix run --impure github:afermg/ChannelSFormer -- tcp://127.0.0.1:5115` from any directory, or
+`nix develop --command bash -c "python server.py tcp://127.0.0.1:5115"` from the root directory of that repository.
 """
 
 import numpy
@@ -10,7 +10,7 @@ import numpy
 from nahual.process import dispatch_setup_process
 
 setup, process = dispatch_setup_process("channelsformer")
-address = "ipc:///tmp/channelsformer.ipc"
+address = "tcp://127.0.0.1:5115"
 
 # %% Load model server-side
 parameters = {

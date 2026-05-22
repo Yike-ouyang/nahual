@@ -1,7 +1,7 @@
 """
 This example uses a server within the environment defined on `https://github.com/afermg/nahual_bioimageio.git`.
 
-Run `nix run github:afermg/nahual_bioimageio -- ipc:///tmp/bioimageio.ipc` from any
+Run `nix run github:afermg/nahual_bioimageio -- tcp://127.0.0.1:5114` from any
 directory. The default variant (ONNX/TorchScript) is enough for `polite-pig`.
 
 Task: Human Protein Atlas (HPA) sub-cellular protein-localisation classification.
@@ -14,7 +14,7 @@ import numpy
 from nahual.process import dispatch_setup_process
 
 setup, process = dispatch_setup_process("bioimageio")
-address = "ipc:///tmp/bioimageio.ipc"
+address = "tcp://127.0.0.1:5114"
 
 # %% polite-pig: HPA protein-localisation classifier. bcyx, 4 channels at 512².
 parameters = {

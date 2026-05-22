@@ -13,7 +13,7 @@ masks[:, 20:40, 20:40] = numpy.random.randint(20, size=20) + 1
 setup, process = dispatch_setup_process("trackastra")
 
 # %%
-address = "ipc:///tmp/trackastra.ipc"
+address = "tcp://127.0.0.1:5126"
 parameters = {"model": "general_2d", "mode": "greedy"}
 model_info = setup(parameters, address=address)
 # %%

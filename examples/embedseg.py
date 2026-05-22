@@ -1,8 +1,8 @@
 """
 This example uses a server within the environment defined on `https://github.com/afermg/EmbedSeg.git` (branch `nahual-wrap`).
 
-Run `nix run github:afermg/EmbedSeg/nahual-wrap -- ipc:///tmp/embedseg.ipc` from any
-directory, or `nix develop --command bash -c "python server.py ipc:///tmp/embedseg.ipc"`
+Run `nix run github:afermg/EmbedSeg/nahual-wrap -- tcp://127.0.0.1:5125` from any
+directory, or `nix develop --command bash -c "python server.py tcp://127.0.0.1:5125"`
 from the root of that repository.
 """
 
@@ -11,7 +11,7 @@ import numpy
 from nahual.process import dispatch_setup_process
 
 setup, process = dispatch_setup_process("embedseg")
-address = "ipc:///tmp/embedseg.ipc"
+address = "tcp://127.0.0.1:5125"
 
 # %% Load model server-side. `weights` is required for real inference; without
 # a checkpoint the model is randomly initialised and the output will be empty.

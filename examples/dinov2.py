@@ -9,7 +9,7 @@ One `uv`-only way to launch the server from the repository root is:
 `uv pip install --python .venv/bin/python trio pynng`
 `uv pip install --python .venv/bin/python -e .`
 `uv pip install --python .venv/bin/python -e ../nahual`
-`uv run --python .venv/bin/python python server.py ipc:///tmp/dinov2.ipc`
+`uv run --python .venv/bin/python python server.py tcp://127.0.0.1:5100`
 """
 
 from pathlib import Path
@@ -19,7 +19,7 @@ import numpy
 from nahual.process import dispatch_setup_process
 
 setup, process = dispatch_setup_process("dinov2")
-address = "ipc:///tmp/dinov2.ipc"
+address = "tcp://127.0.0.1:5100"
 repo_or_dir = Path(__file__).resolve().parents[2] / "dinov2"
 
 # %%Load models server-side

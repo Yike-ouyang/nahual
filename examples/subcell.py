@@ -9,7 +9,7 @@ import numpy
 from nahual.process import dispatch_setup_process
 
 setup, process = dispatch_setup_process("subcell")
-address = "ipc:///tmp/subcell.ipc"
+address = "tcp://127.0.0.1:5110"
 
 # %%Load models server-side
 parameters = dict(

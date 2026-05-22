@@ -1,7 +1,7 @@
 """
 This example uses a server within the environment defined on `https://github.com/afermg/nahual_bioimageio.git`.
 
-Run `nix run github:afermg/nahual_bioimageio#with-careamics -- ipc:///tmp/bioimageio.ipc`
+Run `nix run github:afermg/nahual_bioimageio#with-careamics -- tcp://127.0.0.1:5114`
 from any directory. The `with-careamics` variant pulls in the CAREamics backend
 needed by Noise2Void / N2V2 / CARE-style restoration models.
 
@@ -14,7 +14,7 @@ import numpy
 from nahual.process import dispatch_setup_process
 
 setup, process = dispatch_setup_process("bioimageio")
-address = "ipc:///tmp/bioimageio.ipc"
+address = "tcp://127.0.0.1:5114"
 
 # %% jolly-ox: Noise2Void 2-D denoiser. bcyx input, bcyx output (same shape).
 parameters = {

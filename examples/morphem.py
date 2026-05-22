@@ -1,7 +1,7 @@
 """
 This example uses a server within the environment defined on `https://github.com/afermg/nahual_vit.git`.
 
-Run `nix develop --command bash -c "python src/vit/morphem.py ipc:///tmp/morphem.ipc"` from the root directory of that repository.
+Run `nix develop --command bash -c "python src/vit/morphem.py tcp://127.0.0.1:5118"` from the root directory of that repository.
 """
 
 import numpy
@@ -9,7 +9,7 @@ import numpy
 from nahual.process import dispatch_setup_process
 
 setup, process = dispatch_setup_process("vit")
-address = "ipc:///tmp/morphem.ipc"
+address = "tcp://127.0.0.1:5118"
 
 # %%Load models server-side
 parameters = dict(

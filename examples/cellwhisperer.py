@@ -1,7 +1,7 @@
 """
 This example uses a server within the environment defined on `https://github.com/afermg/CellWhisperer.git`.
 
-Run `nix run github:afermg/CellWhisperer -- ipc:///tmp/cellwhisperer.ipc` from the root directory of that repository.
+Run `nix run github:afermg/CellWhisperer -- tcp://127.0.0.1:5121` from the root directory of that repository.
 
 Note: CellWhisperer is a single-cell transcriptomics model. The Nahual interface
 here takes a 2-D ``(N_cells, N_genes)`` numpy array (not the 5-D NCZYX images
@@ -14,7 +14,7 @@ import numpy
 from nahual.process import dispatch_setup_process
 
 setup, process = dispatch_setup_process("cellwhisperer")
-address = "ipc:///tmp/cellwhisperer.ipc"
+address = "tcp://127.0.0.1:5121"
 
 # %% Load model server-side (random-init scaffold encoder by default).
 parameters = {

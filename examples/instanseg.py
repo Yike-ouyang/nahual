@@ -1,8 +1,8 @@
 """
 This example uses a server within the environment defined on `https://github.com/afermg/instanseg.git` (branch `nahual-wrap`).
 
-Run `nix run github:afermg/instanseg/nahual-wrap -- ipc:///tmp/instanseg.ipc` from any
-directory, or `nix develop --command bash -c "python server.py ipc:///tmp/instanseg.ipc"`
+Run `nix run github:afermg/instanseg/nahual-wrap -- tcp://127.0.0.1:5116` from any
+directory, or `nix develop --command bash -c "python server.py tcp://127.0.0.1:5116"`
 from the root of that repository.
 """
 
@@ -11,7 +11,7 @@ import numpy
 from nahual.process import dispatch_setup_process
 
 setup, process = dispatch_setup_process("instanseg")
-address = "ipc:///tmp/instanseg.ipc"
+address = "tcp://127.0.0.1:5116"
 
 # %% Load model server-side. The default `brightfield_nuclei` model is fetched
 # automatically on first call.

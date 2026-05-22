@@ -1,9 +1,9 @@
 """
 This example uses a server within the environment defined on `https://github.com/afermg/DeepProfiler.git`.
 
-Run `nix run --impure github:afermg/DeepProfiler -- ipc:///tmp/deepprofiler.ipc`
+Run `nix run --impure github:afermg/DeepProfiler -- tcp://127.0.0.1:5113`
 from the root directory of that repository (or `nix develop --impure --command
-python server.py ipc:///tmp/deepprofiler.ipc`).
+python server.py tcp://127.0.0.1:5113`).
 
 Note: DeepProfiler's CPCNNv1 backbone is a Keras ResNet50V2 (TF 2.13 + tf-keras
 2.17 in legacy mode) that emits a 2048-d feature embedding per single-cell crop.
@@ -14,7 +14,7 @@ import numpy
 from nahual.process import dispatch_setup_process
 
 setup, process = dispatch_setup_process("deepprofiler")
-address = "ipc:///tmp/deepprofiler.ipc"
+address = "tcp://127.0.0.1:5113"
 
 # %% Load model server-side (server defaults: ResNet50V2 + ImageNet weights).
 parameters = {

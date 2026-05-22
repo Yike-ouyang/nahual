@@ -1,8 +1,8 @@
 """
 This example uses a server within the environment defined on `https://github.com/afermg/cellSAM.git`.
 
-Run `nix run github:afermg/cellSAM -- ipc:///tmp/cellsam.ipc` from any directory,
-or `nix develop --command bash -c "python server.py ipc:///tmp/cellsam.ipc"`
+Run `nix run github:afermg/cellSAM -- tcp://127.0.0.1:5127` from any directory,
+or `nix develop --command bash -c "python server.py tcp://127.0.0.1:5127"`
 from the root of that repository. The default branch is the no-auth ONNX wrap;
 the original DeepCell-auth path lives on the `nahual-wrap-deepcell` branch.
 
@@ -15,7 +15,7 @@ import numpy
 from nahual.process import dispatch_setup_process
 
 setup, process = dispatch_setup_process("cellsam")
-address = "ipc:///tmp/cellsam.ipc"
+address = "tcp://127.0.0.1:5127"
 
 # %% Load model server-side.
 parameters = {

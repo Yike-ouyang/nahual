@@ -1,9 +1,9 @@
 """
 This client matches https://github.com/afermg/ultrack/blob/nahual-wrap/server.py
 
-Run `nix run github:afermg/ultrack -- ipc:///tmp/ultrack.ipc` from any
+Run `nix run github:afermg/ultrack -- tcp://127.0.0.1:5124` from any
 directory, or `nix develop --command bash -c "python server.py
-ipc:///tmp/ultrack.ipc"` from the root of that repository.
+tcp://127.0.0.1:5124"` from the root of that repository.
 
 Ultrack is a *tracking* server: input is a per-frame foreground/contour stack
 shaped (T, 2, Z, Y, X), output is an integer label volume of track IDs
@@ -15,7 +15,7 @@ import numpy
 from nahual.process import dispatch_setup_process
 
 setup, process = dispatch_setup_process("ultrack")
-address = "ipc:///tmp/ultrack.ipc"
+address = "tcp://127.0.0.1:5124"
 
 # %% Load model server-side. All keys are optional; the empty dict gets you
 # ultrack defaults.
