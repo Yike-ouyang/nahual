@@ -15,10 +15,11 @@ address = "tcp://127.0.0.1:5110"
 parameters = dict(
     model_type="mae_contrast_supcon_model",
     model_channels="rybg",
-    # device=0, # optional
+    device=-1, # optional
 )
 response = setup(parameters, address=address)
 
 # %% Define custom data
 data = numpy.random.random_sample((2, 4, 1, 256, 256))
 result = process(data, address=address)
+print(result)
